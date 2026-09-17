@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<title>Karne — 8. Sınıf Takip</title>
+<meta name="theme-color" content="#1F2A44">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#E9E6DC;
+  --surface:#FAF8F2;
+  --ink:#1F2A44;
+  --ink-soft:#525C77;
+  --ink-faint:#8992A8;
+  --red:#A6362C;
+  --red-soft:#C6564A;
+  --green:#3F6E52;
+  --green-soft:#5C8F71;
+  --amber:#B8863A;
+  --line:#CFC7AE;
+  --line-soft:#DED8C4;
+  --radius:2px;
+  --c-turkce:#B5482F;
+  --c-mat:#2A5C99;
+  --c-fen:#3F7D4F;
+  --c-inkilap:#8A3B5C;
+  --c-din:#6B4C93;
+  --c-ing:#C07A2A;
+  --serif:'Source Serif 4', Georgia, serif;
+  --sans:'IBM Plex Sans', -apple-system, sans-serif;
+  --mono:'IBM Plex Mono', 'Courier New', monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.45;
+  overscroll-behavior-y:none;
+}
+#app{max-width:560px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--paper);}
+
+/* ---------- topbar ---------- */
+.topbar{
+  padding:18px 18px 14px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--paper);z-index:20;
+}
+.topbar h1{
+  font-family:var(--serif);font-weight:700;font-size:20px;margin:0;letter-spacing:.2px;
+}
+.topbar .sub{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1.2px;margin-top:2px;}
+.streak-stamp{
+  border:1.5px solid var(--ink);border-radius:50%;
+  width:54px;height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transform:rotate(-6deg);flex-shrink:0;position:relative;
+}
+.streak-stamp::after{content:"";position:absolute;inset:4px;border:1px dashed var(--ink-faint);border-radius:50%;}
+.streak-stamp b{font-family:var(--mono);font-size:18px;line-height:1;color:var(--amber);}
+.streak-stamp span{font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);margin-top:1px;}
+
+/* ---------- main / views ---------- */
+main{flex:1;overflow-y:auto;padding:16px 16px 96px;}
+.view{display:none;}
+.view.active{display:block;animation:fade .15s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+h2.section-title{
+  font-family:var(--serif);font-weight:600;font-size:15px;margin:22px 0 10px;
+  display:flex;align-items:center;gap:8px;color:var(--ink);
+}
+h2.section-title:first-child{margin-top:0;}
+h2.section-title .n{font-family:var(--mono);font-size:11px;color:var(--ink-faint);}
+
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px;margin-bottom:10px;
+}
+.card + .card{margin-top:8px;}
+
+/* stat grid on home */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:4px;}
+.stat-box{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:12px 12px 10px;position:relative;
+}
+.stat-box b{display:block;font-family:var(--mono);font-size:22px;color:var(--ink);}
+.stat-box span{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;}
+.stat-box.accent b{color:var(--red);}
+.stat-box.c1{border-top:3px solid var(--ink);}
+.stat-box.c2{border-top:3px solid var(--amber);}
+.stat-box.c2 b{color:var(--amber);}
+.stat-box.c3{border-top:3px solid var(--c-mat);}
+.stat-box.c3 b{color:var(--c-mat);}
+.stat-box.c4{border-top:3px solid var(--red);}
+.stat-box.c4 b{color:var(--red);}
+
+canvas#trendChart{width:100%!important;height:150px;display:block;}
+canvas#soruChart{width:100%!important;height:150px;display:block;}
+canvas#sorularChart{width:100%!important;height:150px;display:block;}
+.chart-toggle{display:flex;gap:6px;margin-bottom:10px;}
+.chart-toggle button{
+  background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);
+  font-family:var(--sans);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;
+  padding:5px 12px;border-radius:20px;
+}
+.chart-toggle button.active{background:var(--ink);border-color:var(--ink);color:var(--surface);}
+.chart-legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:10px;}
+.chart-legend .lg-item{display:flex;align-items:center;font-size:10.5px;color:var(--ink-soft);}
+
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0;}
+
+.weak-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft);gap:10px;}
+.weak-row:last-child{border-bottom:none;}
+.weak-row .wname{font-size:13px;flex:1;}
+.weak-row .wsub{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;}
+.pct-pill{font-family:var(--mono);font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid;flex-shrink:0;}
+
+.empty-note{color:var(--ink-faint);font-size:13px;padding:14px 2px;font-style:italic;}
+
+/* ---------- forms ---------- */
+label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);margin:12px 0 5px;}
+label:first-child{margin-top:0;}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:var(--radius);
+  background:var(--surface);color:var(--ink);font-family:var(--sans);font-size:14px;
+}
+textarea{resize:vertical;min-height:70px;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ink);outline-offset:1px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  background:var(--ink);color:var(--surface);border:none;border-radius:var(--radius);
+  padding:11px 16px;font-family:var(--sans);font-weight:600;font-size:13px;
+  letter-spacing:.2px;cursor:pointer;width:100%;margin-top:16px;
+}
+.btn:active{opacity:.85;}
+.btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink);}
+.btn.danger{background:var(--red);}
+.btn.small{width:auto;padding:7px 12px;font-size:12px;margin-top:0;}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-soft);}
+
+/* deneme subject rows */
+.ders-row{border:1px solid var(--line);border-radius:var(--radius);padding:10px 11px;margin-bottom:8px;background:var(--surface);}
+.ders-row .dname{font-weight:600;font-size:13px;margin-bottom:8px;display:flex;justify-content:space-between;}
+.ders-row .dname .max{font-family:var(--mono);color:var(--ink-faint);font-weight:400;font-size:11px;}
+.mini-field{display:flex;flex-direction:column;gap:3px;}
+.mini-field label{margin:0;font-size:9px;}
+.mini-field input{padding:7px 8px;font-size:13px;text-align:center;}
+
+/* topic accuracy bars */
+.topic-row{padding:10px 0;border-bottom:1px solid var(--line-soft);cursor:pointer;}
+.topic-row:last-child{border-bottom:none;}
+.topic-row .trh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.topic-row .tname{font-size:13.5px;font-weight:500;}
+.topic-row .tcount{font-family:var(--mono);font-size:11px;color:var(--ink-faint);}
+.bar-track{height:6px;background:var(--line-soft);border-radius:3px;overflow:hidden;display:flex;}
+.bar-fill-g{height:100%;background:var(--green-soft);}
+.bar-fill-r{height:100%;background:var(--red-soft);}
+
+.tabs-sub{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px;-ms-overflow-style:none;scrollbar-width:none;}
+.tabs-sub::-webkit-scrollbar{display:none;}
+.tab-chip{flex-shrink:0;padding:7px 13px;border:1px solid var(--line);border-radius:20px;font-size:12px;font-weight:500;color:var(--ink-soft);background:var(--surface);white-space:nowrap;}
+.tab-chip.active{background:var(--ink);color:var(--surface);border-color:var(--ink);}
+
+/* list items: hata / not / plan */
+.list-item{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:8px;}
+.list-item.li-deneme{border-left-color:var(--c-mat);}
+.list-item.li-hata{border-left-color:var(--red);}
+.list-item.li-plan{border-left-color:var(--c-fen);}
+.list-item.li-not{border-left-color:var(--c-din);}
+.list-item .lh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px;}
+.list-item .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.tag{font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:2px 7px;border:1px solid var(--line);border-radius:20px;color:var(--ink-soft);}
+.tag.red{border-color:var(--red-soft);color:var(--red);}
+.list-item .body-txt{font-size:13px;color:var(--ink);margin:4px 0;}
+.list-item .meta{font-size:11px;color:var(--ink-faint);font-family:var(--mono);}
+.meta{font-size:11px;color:var(--ink-faint);}
+.list-item .actions{display:flex;gap:8px;margin-top:8px;}
+.icon-btn{background:none;border:1px solid var(--line);border-radius:var(--radius);padding:6px 10px;font-size:11px;color:var(--ink-soft);}
+
+.plan-check{display:flex;align-items:center;gap:10px;}
+.plan-check input[type=checkbox]{width:18px;height:18px;accent-color:var(--ink);flex-shrink:0;}
+.plan-check .ptxt{flex:1;font-size:13.5px;}
+.plan-check .ptxt.done{text-decoration:line-through;color:var(--ink-faint);}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(31,42,68,.45);display:none;align-items:flex-end;z-index:100;}
+.overlay.open{display:flex;}
+.modal{background:var(--paper);width:100%;max-width:560px;margin:0 auto;border-radius:14px 14px 0 0;padding:18px 18px 26px;max-height:85vh;overflow-y:auto;}
+.modal h3{font-family:var(--serif);font-size:17px;margin:0 0 4px;}
+.modal .close-x{position:absolute;}
+.modal-top{display:flex;justify-content:space-between;align-items:center;}
+.x-btn{background:none;border:none;font-family:var(--mono);font-size:20px;color:var(--ink-soft);padding:0 4px;}
+
+/* tabbar */
+.tabbar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--line);
+  display:flex;max-width:560px;margin:0 auto;
+  padding:6px 2px calc(6px + env(safe-area-inset-bottom));
+  z-index:30;
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:none;border:none;color:var(--ink-faint);padding:6px 2px;font-family:var(--sans);
+}
+.tab-btn svg{width:20px;height:20px;stroke:var(--ink-faint);fill:none;stroke-width:1.6;}
+.tab-btn span{font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;}
+.tab-btn.active{color:var(--ink);}
+.tab-btn.active svg{stroke:var(--ink);}
+
+.reminder-row{display:flex;gap:8px;align-items:center;}
+.reminder-row input{flex:1;}
+.note-line{font-size:11px;color:var(--ink-faint);margin-top:8px;line-height:1.5;}
+.divider{height:1px;background:var(--line);margin:18px 0;}
+hr.rule{border:none;border-top:1px dashed var(--line);margin:14px 0;}
+
+/* haftalik gorev tablosu */
+.week-table{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed;}
+.week-table th{
+  font-family:var(--sans);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;
+  padding:8px 6px;text-align:left;border-bottom:2px solid var(--ink);color:var(--ink);
+}
+.week-table th .wdate{display:block;font-family:var(--mono);font-weight:400;font-size:9px;color:var(--ink-faint);text-transform:none;letter-spacing:0;margin-top:1px;}
+.week-table td{
+  vertical-align:top;padding:8px 6px;width:108px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);
+}
+.week-table td.today{background:rgba(184,134,58,0.08);}
+.wk-task{display:flex;align-items:flex-start;gap:5px;font-size:11.5px;margin-bottom:6px;line-height:1.3;}
+.wk-task input[type=checkbox]{width:14px;height:14px;margin-top:1px;accent-color:var(--ink);flex-shrink:0;}
+.wk-task span.done{text-decoration:line-through;color:var(--ink-faint);}
+.wk-task .wk-x{background:none;border:none;color:var(--ink-faint);font-family:var(--mono);font-size:12px;padding:0 2px;flex-shrink:0;margin-left:auto;}
+.wk-add{display:flex;gap:3px;margin-top:6px;}
+.wk-add input{padding:5px 6px;font-size:11px;}
+.wk-add button{background:var(--ink);color:var(--surface);border:none;border-radius:2px;padding:0 8px;font-size:13px;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div>
+      <h1>Karne</h1>
+      <div class="sub">8. Sınıf Takip Defteri</div>
+    </div>
+    <div class="streak-stamp"><b id="streakNum">0</b><span>gün seri</span></div>
+  </div>
+
+  <main id="views">
+
+    <!-- HOME -->
+    <section class="view active" id="view-home">
+      <div class="card hide" id="installCard" style="border-color:var(--amber);">
+        <div style="font-weight:600;font-size:13.5px;margin-bottom:4px;">Uygulamayı Yükle</div>
+        <div class="note-line" style="margin-top:0;">Telefonuna gerçek bir uygulama gibi kur — bir daha İndirilenler'den açmana gerek kalmaz.</div>
+        <button class="btn small" id="btnInstall" style="width:100%;margin-top:10px;">Ana Ekrana Ekle</button>
+      </div>
+
+      <h2 class="section-title">Genel Durum</h2>
+      <div class="stat-grid">
+        <div class="stat-box c1"><b id="stToplamDeneme">0</b><span>Toplam Deneme</span></div>
+        <div class="stat-box c2"><b id="stOrtNet">0</b><span>Ortalama Net</span></div>
+        <div class="stat-box c3"><b id="stToplamSoru">0</b><span>Çözülen Soru</span></div>
+        <div class="stat-box c4"><b id="stAktifHata">0</b><span>Açık Hata Kaydı</span></div>
+      </div>
+
+      <h2 class="section-title">Deneme Net Grafiği <span class="n">son 10 deneme</span></h2>
+      <div class="card">
+        <div class="chart-toggle" id="denemeChartToggle">
+          <button data-t="line" class="active">Çizgi</button>
+          <button data-t="bar">Sütun</button>
+        </div>
+        <canvas id="trendChart"></canvas>
+        <div class="chart-legend" id="denemeChartLegend"></div>
+      </div>
+
+      <h2 class="section-title">Soru Çözüm Grafiği <span class="n">son 14 gün</span></h2>
+      <div class="card">
+        <div class="chart-toggle" id="soruChartToggle">
+          <button data-t="bar" class="active">Sütun</button>
+          <button data-t="line">Çizgi</button>
+        </div>
+        <canvas id="soruChart"></canvas>
+      </div>
+
+      <h2 class="section-title">Öncelikli Konular <span class="n">en zayıf 5</span></h2>
+      <div class="card" id="weakList"></div>
+
+      <h2 class="section-title">Bugünün Planı</h2>
+      <div class="card" id="homePlanSummary"></div>
+
+      <h2 class="section-title">Hatırlatıcı</h2>
+      <div class="card">
+        <div class="reminder-row">
+          <input type="time" id="reminderTime" value="19:00">
+          <button class="btn small" id="btnReminder" style="margin-top:0;flex-shrink:0;">Etkinleştir</button>
+        </div>
+        <div class="note-line" id="reminderNote">Bildirim yalnızca bu uygulama sekmesi açıkken çalışır. Tarayıcı arka planda bildirim izni istenecek.</div>
+      </div>
+
+      <h2 class="section-title">Veri</h2>
+      <div class="card">
+        <button class="btn secondary small" id="btnExport">Yedek İndir (.json)</button>
+        <button class="btn secondary small" id="btnYedekYukle" style="margin-top:8px;">Yedek Yükle (.json)</button>
+        <input type="file" id="yedekDosya" accept="application/json,.json" style="display:none;">
+        <div class="note-line" id="yedekMsg"></div>
+        <button class="btn ghost small" id="btnReset" style="margin-top:8px;">Tüm Verileri Sıfırla</button>
+      </div>
+    </section>
+
+    <!-- DENEME -->
+    <section class="view" id="view-deneme">
+      <h2 class="section-title">Yeni Deneme Kaydı</h2>
+      <div class="card">
+        <label>Tarih</label>
+        <input type="date" id="denemeTarih">
+        <label>Deneme Adı <span style="text-transform:none;">(opsiyonel)</span></label>
+        <input type="text" id="denemeAd" placeholder="Örn. Hız ve Renk 3. Deneme">
+        <div id="denemeDersler"></div>
+        <button class="btn" id="btnDenemeKaydet">Denemeyi Kaydet</button>
+      </div>
+
+      <h2 class="section-title">Geçmiş Denemeler <span class="n" id="denemeSayac"></span></h2>
+      <div id="denemeListe"></div>
+    </section>
+
+    <!-- HATA DEFTERI -->
+    <section class="view" id="view-hata">
+      <h2 class="section-title">Hata Defterine Ekle</h2>
+      <div class="card">
+        <label>Ders</label>
+        <select id="hataDers"></select>
+        <label>Konu</label>
+        <select id="hataKonu"></select>
+        <div class="row2">
+          <div><label>Kaynak</label>
+            <select id="hataKaynak">
+              <option>Deneme</option>
+              <option>Kitap / Fasikül</option>
+              <option>Okul Sınavı</option>
+              <option>Diğer</option>
+            </select>
+          </div>
+          <div><label>Soru No <span style="text-transform:none;">(opsiyonel)</span></label><input type="text" id="hataSoruNo" placeholder="Örn. 5. soru"></div>
+        </div>
+        <label>Soru Özeti</label>
+        <textarea id="hataSoru" placeholder="Hangi soruyu, hangi bilgiyi karıştırdın?"></textarea>
+        <div class="row2">
+          <div><label>Doğru Cevap</label><input type="text" id="hataDogruCevap" placeholder="Örn. B şıkkı"></div>
+          <div><label>Neden Yanlış</label>
+            <select id="hataNeden">
+              <option>Dikkatsizlik</option>
+              <option>Bilgi Eksikliği</option>
+              <option>Kavram Yanılgısı</option>
+              <option>Zaman Yetersizliği</option>
+              <option>Soruyu Yanlış Okudum</option>
+            </select>
+          </div>
+        </div>
+        <label>Soru Görseli <span style="text-transform:none;">(PDF sayfasının ekran görüntüsü ya da kitaptan çektiğin fotoğraf)</span></label>
+        <input type="file" id="hataGorsel" accept="image/*" capture="environment">
+        <div id="hataGorselOnizleme" style="margin-top:8px;"></div>
+        <button class="btn" id="btnHataKaydet">Hata Defterine Ekle</button>
+      </div>
+
+      <h2 class="section-title">Kayıtlar <span class="n" id="hataSayac"></span></h2>
+      <div class="tabs-sub" id="hataFiltre"></div>
+      <div id="hataListe"></div>
+    </section>
+
+    <!-- PLANLAYICI -->
+    <section class="view" id="view-plan">
+      <h2 class="section-title">Günlük Plan</h2>
+      <div class="card">
+        <label>Tarih</label>
+        <input type="date" id="planTarih">
+        <label>Görev</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="planGorevInput" placeholder="Örn. Matematik: 20 soru üslü ifadeler">
+          <button class="btn small" id="btnPlanEkle" style="margin-top:0;flex-shrink:0;">Ekle</button>
+        </div>
+      </div>
+      <h2 class="section-title">Görevler</h2>
+      <div id="planListe"></div>
+
+      <h2 class="section-title">Haftalık Görev Tablosu</h2>
+      <div class="card" style="overflow-x:auto;padding:12px 8px;">
+        <table class="week-table" id="haftaTablo"></table>
+      </div>
+    </section>
+
+    <!-- NOTLAR -->
+    <section class="view" id="view-not">
+      <h2 class="section-title">Yeni Not</h2>
+      <div class="card">
+        <label>Başlık</label>
+        <input type="text" id="notBaslik" placeholder="Örn. Kareköklü ifadeler — özet">
+        <label>İçerik</label>
+        <textarea id="notIcerik" style="min-height:110px;" placeholder="Notunu yaz..."></textarea>
+        <button class="btn" id="btnNotKaydet">Notu Kaydet</button>
+      </div>
+      <h2 class="section-title">Defter <span class="n" id="notSayac"></span></h2>
+      <div id="notListe"></div>
+    </section>
+
+    <!-- SORULAR -->
+    <section class="view" id="view-sorular">
+      <h2 class="section-title">Soru Kaydı Ekle</h2>
+      <div class="card">
+        <div class="row2">
+          <div><label>Tarih</label><input type="date" id="soruTarih"></div>
+          <div><label>Ders</label>
+            <select id="soruDers">
+              <option>Genel</option>
+            </select>
+          </div>
+        </div>
+        <label>Konu <span style="text-transform:none;">(opsiyonel)</span></label>
+        <select id="soruKonu"><option value="">— Ders seç —</option></select>
+        <div class="row2">
+          <div><label>Doğru</label><input type="number" id="soruDogru" min="0" value="0" inputmode="numeric"></div>
+          <div><label>Yanlış</label><input type="number" id="soruYanlis" min="0" value="0" inputmode="numeric"></div>
+        </div>
+        <button class="btn" id="btnSoruKaydet">Kaydet</button>
+        <div class="note-line">Geçmiş bir tarih için de girebilirsin — geriye dönük kayıt eklemek grafikleri günceller. Konu seçersen ana sayfadaki "en zayıf konular" listesi de güncellenir.</div>
+      </div>
+
+      <h2 class="section-title">Bu Hafta</h2>
+      <div class="stat-grid" id="haftaOzet"></div>
+
+      <h2 class="section-title">Soru Çözüm Grafiği</h2>
+      <div class="card">
+        <div class="tabs-sub" id="soruAralikTabs">
+          <button class="tab-chip active" data-r="7">7 Gün</button>
+          <button class="tab-chip" data-r="14">14 Gün</button>
+          <button class="tab-chip" data-r="30">30 Gün</button>
+          <button class="tab-chip" data-r="90">90 Gün</button>
+        </div>
+        <div class="chart-toggle" id="sorularChartToggle">
+          <button data-t="bar" class="active">Sütun</button>
+          <button data-t="line">Çizgi</button>
+        </div>
+        <canvas id="sorularChart"></canvas>
+      </div>
+
+      <h2 class="section-title">Başarı Oranı <span class="n">gösterilen aralık</span></h2>
+      <div class="card" id="sorularBasariOrani"></div>
+
+      <h2 class="section-title">Ders Dağılımı <span class="n">gösterilen aralık</span></h2>
+      <div class="card" id="sorularDersDagilim"></div>
+
+      <h2 class="section-title">Gün Gün Kayıtlar <span class="n" id="sorularKayitSayac"></span></h2>
+      <div id="sorularGunListe"></div>
+    </section>
+
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab-btn active" data-view="home">
+      <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h14v-9"/></svg>
+      <span>Ana Sayfa</span>
+    </button>
+    <button class="tab-btn" data-view="deneme">
+      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+      <span>Deneme</span>
+    </button>
+    <button class="tab-btn" data-view="sorular">
+      <svg viewBox="0 0 24 24"><path d="M4 19V10M10 19V5M16 19v-7M21 19H3"/></svg>
+      <span>Sorular</span>
+    </button>
+    <button class="tab-btn" data-view="hata">
+      <svg viewBox="0 0 24 24"><path d="M12 3v10"/><circle cx="12" cy="18" r="1.2"/><path d="M4 20 12 4l8 16z"/></svg>
+      <span>Hata</span>
+    </button>
+    <button class="tab-btn" data-view="plan">
+      <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="1"/><path d="M4 9h16M8 3v4M16 3v4"/><path d="m8.5 13 2 2 4-4"/></svg>
+      <span>Plan</span>
+    </button>
+    <button class="tab-btn" data-view="not">
+      <svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3M9 11h6M9 15h6"/></svg>
+      <span>Not</span>
+    </button>
+  </nav>
+</div>
+
+<div class="overlay" id="imgOverlay">
+  <div class="modal" style="padding:12px;">
+    <div class="modal-top">
+      <h3>Soru Görseli</h3>
+      <button class="x-btn" id="imgOverlayClose">×</button>
+    </div>
+    <img id="imgOverlayImg" style="width:100%;border-radius:4px;margin-top:8px;display:block;">
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---- PWA: service worker kaydı + Ana Ekrana Ekle ---- */
+if("serviceWorker" in navigator && (location.protocol==="https:" || location.hostname==="localhost")){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+}
+let ertelenenKurulum = null;
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  ertelenenKurulum = e;
+  const card = document.getElementById("installCard");
+  if(card) card.classList.remove("hide");
+});
+window.addEventListener("appinstalled", ()=>{
+  const card = document.getElementById("installCard");
+  if(card) card.classList.add("hide");
+  ertelenenKurulum = null;
+});
+document.getElementById("btnInstall")?.addEventListener("click", async ()=>{
+  if(!ertelenenKurulum) return;
+  ertelenenKurulum.prompt();
+  await ertelenenKurulum.userChoice;
+  ertelenenKurulum = null;
+  document.getElementById("installCard").classList.add("hide");
+});
+
+/* ================= MÜFREDAT — 8. SINIF ================= */
+const DERSLER_TAM = {
+  "Türkçe": ["Fiilimsiler","Cümlede Anlam","Paragrafta Anlam","Sözcükte Anlam","Cümle Türleri","Yazım Kuralları","Noktalama İşaretleri","Metin Türleri","Söz Sanatları","Anlatım Bozuklukları"],
+  "Matematik": ["Çarpanlar ve Katlar","Üslü İfadeler","Kareköklü İfadeler","Veri Analizi","Olasılık","Cebirsel İfadeler ve Özdeşlikler","Doğrusal Denklemler","Eşitsizlikler","Üçgenler","Dönüşüm Geometrisi","Eşlik ve Benzerlik","Geometrik Cisimler"],
+  "Fen Bilimleri": ["Mevsimler ve İklim","DNA ve Genetik Kod","Basınç","Madde ve Endüstri","Basit Makineler","Enerji Dönüşümleri ve Çevre Bilimi","Elektrik Yükleri ve Elektrik Enerjisi"],
+  "İnkılap Tarihi": ["Bir Kahraman Doğuyor","Milli Uyanış: Bağımsızlık Yolunda Atılan Adımlar","Milli Bir Destan: Ya İstiklal Ya Ölüm","Atatürkçülük ve Çağdaşlaşan Türkiye","Demokratikleşme Çabaları","Atatürk Dönemi Türk Dış Politikası","Atatürk'ün Ölümü ve Sonrası"],
+  "Din Kültürü": ["Kader İnancı","Zekât ve Sadaka","Din ve Hayat","Hz. Muhammed'in Örnekliği","Kur'an-ı Kerim ve Özellikleri"],
+  "İngilizce": ["Friendship","Teen Life","In the Kitchen","On the Phone","The Internet","Adventures","Tourism","Chores","Science","Natural Forces"]
+};
+const LGS_SORU_SAYISI = {"Türkçe":20,"Matematik":20,"Fen Bilimleri":20,"İnkılap Tarihi":10,"Din Kültürü":10,"İngilizce":10};
+const DERS_LISTESI = Object.keys(DERSLER_TAM);
+const DERS_RENK = {"Türkçe":"#B5482F","Matematik":"#2A5C99","Fen Bilimleri":"#3F7D4F","İnkılap Tarihi":"#8A3B5C","Din Kültürü":"#6B4C93","İngilizce":"#C07A2A"};
+
+/* ================= STATE / STORAGE ================= */
+const STORE_KEY = "karneVerisi_v1";
+function bosVeri(){
+  return {
+    denemeler: [],
+    konuIstatistik: {},
+    hataDefteri: [],
+    planlar: [],
+    notlar: [],
+    soruGecmisi: [],
+    streak: { count:0, lastDate:null },
+    reminderTime: "19:00",
+    reminderOn: false,
+    nextId: 1
+  };
+}
+let state = yukle();
+function yukle(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return bosVeri();
+    const parsed = JSON.parse(raw);
+    return Object.assign(bosVeri(), parsed);
+  }catch(e){ return bosVeri(); }
+}
+function kaydet(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+function yeniId(){ return state.nextId++; }
+function bugun(){ return new Date().toISOString().slice(0,10); }
+
+function konuAnahtari(ders,konu){ return ders+" || "+konu; }
+function konuVeri(ders,konu){
+  const k = konuAnahtari(ders,konu);
+  if(!state.konuIstatistik[k]) state.konuIstatistik[k] = {dogru:0,yanlis:0};
+  return state.konuIstatistik[k];
+}
+
+/* streak: her veri değiştiren aksiyonda çağrılır */
+function dokunSeri(){
+  const t = bugun();
+  if(state.streak.lastDate === t) return;
+  if(state.streak.lastDate){
+    const dun = new Date(); dun.setDate(dun.getDate()-1);
+    const dunStr = dun.toISOString().slice(0,10);
+    if(state.streak.lastDate === dunStr){
+      state.streak.count += 1;
+    } else {
+      state.streak.count = 1;
+    }
+  } else {
+    state.streak.count = 1;
+  }
+  state.streak.lastDate = t;
+}
+
+/* ================= NAV ================= */
+const views = ["home","deneme","sorular","hata","plan","not"];
+function gitView(v){
+  views.forEach(x=>{
+    document.getElementById("view-"+x).classList.toggle("active", x===v);
+  });
+  document.querySelectorAll(".tab-btn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view===v);
+  });
+  if(v==="home") renderHome();
+  if(v==="deneme") renderDeneme();
+  if(v==="hata") renderHata();
+  if(v==="plan") renderPlan();
+  if(v==="sorular") renderSorular();
+  if(v==="not") renderNot();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll(".tab-btn").forEach(b=>{
+  b.addEventListener("click", ()=>gitView(b.dataset.view));
+});
+
+/* ================= HOME ================= */
+let denemeChartType = "line";
+let soruChartType = "bar";
+
+function drawChart(canvasId, values, opts){
+  opts = opts || {};
+  const type = opts.type || "line";
+  const emptyMsg = opts.emptyMsg || "Henüz veri yok.";
+  const lineColor = opts.color || "#1F2A44";
+  const pointColor = opts.pointColor || "#B8863A";
+
+  const canvas = document.getElementById(canvasId);
+  const ratio = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 300;
+  const h = 150;
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.clearRect(0,0,w,h);
+
+  const padL=8, padR=8, padT=14, padB=8;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  if(!values.length){
+    ctx.fillStyle = "#8992A8";
+    ctx.font = "12px IBM Plex Sans, sans-serif";
+    ctx.fillText(emptyMsg, padL, h/2);
+    return;
+  }
+
+  let min = Math.min(...values, 0);
+  let max = Math.max(...values, 1);
+  if(min===max){ min-=1; max+=1; }
+  const rangePad = (max-min)*0.12;
+  min -= rangePad; max += rangePad;
+
+  ctx.strokeStyle = "#DED8C4";
+  ctx.lineWidth = 1;
+  for(let i=0;i<=3;i++){
+    const y = padT + (plotH/3)*i;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+  }
+
+  const zeroY = padT + plotH - ((0-min)/(max-min))*plotH;
+
+  if(type === "bar"){
+    const n = values.length;
+    const slot = plotW / n;
+    const barW = Math.max(4, slot * 0.55);
+    values.forEach((v,i)=>{
+      const cx = padL + slot*i + slot/2;
+      const y = padT + plotH - ((v-min)/(max-min))*plotH;
+      const top = Math.min(y, zeroY);
+      const hgt = Math.abs(zeroY - y) || 1;
+      ctx.fillStyle = v < 0 ? "#A6362C" : lineColor;
+      ctx.fillRect(cx - barW/2, top, barW, hgt);
+    });
+    return;
+  }
+
+  const pts = values.map((v,i)=>{
+    const x = values.length>1 ? padL + (plotW/(values.length-1))*i : padL + plotW/2;
+    const y = padT + plotH - ((v-min)/(max-min))*plotH;
+    return [x,y];
+  });
+
+  const grad = ctx.createLinearGradient(0,padT,0,padT+plotH);
+  grad.addColorStop(0, lineColor+"29");
+  grad.addColorStop(1, lineColor+"00");
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0], padT+plotH);
+  pts.forEach(p=>ctx.lineTo(p[0],p[1]));
+  ctx.lineTo(pts[pts.length-1][0], padT+plotH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  ctx.beginPath();
+  pts.forEach((p,i)=> i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth = 2.2;
+  ctx.lineJoin = "round";
+  ctx.stroke();
+
+  pts.forEach(p=>{
+    ctx.beginPath();
+    ctx.arc(p[0],p[1],3.4,0,Math.PI*2);
+    ctx.fillStyle = pointColor;
+    ctx.fill();
+    ctx.lineWidth=1.5; ctx.strokeStyle="#FAF8F2"; ctx.stroke();
+  });
+}
+
+/* çoklu seri grafik: her ders kendi renginde ayrı çizgi/sütun */
+function drawMultiChart(canvasId, seriler, opts){
+  opts = opts || {};
+  const type = opts.type || "line";
+  const emptyMsg = opts.emptyMsg || "Henüz veri yok.";
+  const n = opts.n || 0;
+
+  const canvas = document.getElementById(canvasId);
+  const ratio = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth || 300;
+  const h = 150;
+  canvas.width = w * ratio;
+  canvas.height = h * ratio;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(ratio,0,0,ratio,0,0);
+  ctx.clearRect(0,0,w,h);
+
+  const padL=8, padR=8, padT=14, padB=8;
+  const plotW = w - padL - padR;
+  const plotH = h - padT - padB;
+
+  if(!n){
+    ctx.fillStyle = "#8992A8";
+    ctx.font = "12px IBM Plex Sans, sans-serif";
+    ctx.fillText(emptyMsg, padL, h/2);
+    return;
+  }
+
+  let allVals = [0];
+  seriler.forEach(s=> s.values.forEach(v=>allVals.push(v)));
+  let min = Math.min(...allVals);
+  let max = Math.max(...allVals);
+  if(min===max){ min-=1; max+=1; }
+  const rangePad = (max-min)*0.12;
+  min -= rangePad; max += rangePad;
+
+  ctx.strokeStyle = "#DED8C4";
+  ctx.lineWidth = 1;
+  for(let i=0;i<=3;i++){
+    const y = padT + (plotH/3)*i;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+  }
+  const zeroY = padT + plotH - ((0-min)/(max-min))*plotH;
+
+  if(type === "bar"){
+    const slot = plotW / n;
+    const grupW = slot * 0.78;
+    const barW = grupW / seriler.length;
+    for(let i=0;i<n;i++){
+      const grupX = padL + slot*i + (slot-grupW)/2;
+      seriler.forEach((s,si)=>{
+        const v = s.values[i];
+        const y = padT + plotH - ((v-min)/(max-min))*plotH;
+        const top = Math.min(y, zeroY);
+        const hgt = Math.abs(zeroY - y) || 1;
+        ctx.fillStyle = s.color;
+        ctx.fillRect(grupX + barW*si, top, Math.max(barW-1,1), hgt);
+      });
+    }
+    return;
+  }
+
+  seriler.forEach(s=>{
+    const pts = s.values.map((v,i)=>{
+      const x = n>1 ? padL + (plotW/(n-1))*i : padL + plotW/2;
+      const y = padT + plotH - ((v-min)/(max-min))*plotH;
+      return [x,y];
+    });
+    ctx.beginPath();
+    pts.forEach((p,i)=> i===0?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1]));
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2;
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    pts.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p[0],p[1],3,0,Math.PI*2);
+      ctx.fillStyle = s.color;
+      ctx.fill();
+      ctx.lineWidth=1.3; ctx.strokeStyle="#FAF8F2"; ctx.stroke();
+    });
+  });
+}
+
+/* günlük soru çözüm serisi: son N gün, boş günler 0 — yalnızca Konular sekmesi girişleri */
+function soruGunlukSeri(gunSayisi){
+  const gunler = [];
+  const bugunTarih = new Date(bugun()+"T00:00:00");
+  for(let i=gunSayisi-1;i>=0;i--){
+    const d = new Date(bugunTarih); d.setDate(d.getDate()-i);
+    gunler.push(d.toISOString().slice(0,10));
+  }
+  const toplamlar = {};
+  state.soruGecmisi.forEach(kayit=>{
+    toplamlar[kayit.tarih] = (toplamlar[kayit.tarih]||0) + kayit.adet;
+  });
+  return gunler.map(g => toplamlar[g] || 0);
+}
+
+function ciz_denemeChart(){
+  const son10 = state.denemeler.slice(-10);
+  const seriler = DERS_LISTESI.map(ders=>({
+    color: DERS_RENK[ders],
+    values: son10.map(d => d.dersler[ders] ? d.dersler[ders].net : 0)
+  }));
+  drawMultiChart("trendChart", seriler, {type: denemeChartType, emptyMsg:"Henüz deneme kaydı yok.", n: son10.length});
+  document.getElementById("denemeChartLegend").innerHTML = DERS_LISTESI.map(ders=>
+    `<span class="lg-item"><span class="dot" style="background:${DERS_RENK[ders]};"></span>${ders}</span>`
+  ).join("");
+}
+function ciz_soruChart(){
+  drawChart("soruChart", soruGunlukSeri(14), {
+    type: soruChartType, emptyMsg:"Henüz soru kaydı yok.", color:"#3F7D4F", pointColor:"#2A5C99"
+  });
+}
+document.querySelectorAll("#denemeChartToggle button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    denemeChartType = b.dataset.t;
+    document.querySelectorAll("#denemeChartToggle button").forEach(x=>x.classList.toggle("active", x===b));
+    ciz_denemeChart();
+  });
+});
+document.querySelectorAll("#soruChartToggle button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    soruChartType = b.dataset.t;
+    document.querySelectorAll("#soruChartToggle button").forEach(x=>x.classList.toggle("active", x===b));
+    ciz_soruChart();
+  });
+});
+window.addEventListener("resize", ()=>{
+  if(document.getElementById("view-home").classList.contains("active")){
+    ciz_denemeChart();
+    ciz_soruChart();
+  }
+});
+function renderHome(){
+  document.getElementById("streakNum").textContent = state.streak.count;
+
+  const dCount = state.denemeler.length;
+  document.getElementById("stToplamDeneme").textContent = dCount;
+
+  let toplamNet = 0, toplamSoru = 0;
+  state.denemeler.forEach(d=>{
+    toplamNet += d.toplamNet;
+    DERS_LISTESI.forEach(ders=>{
+      const b = d.dersler[ders];
+      if(b) toplamSoru += (b.dogru+b.yanlis+b.bos);
+    });
+  });
+  document.getElementById("stOrtNet").textContent = dCount ? (toplamNet/dCount).toFixed(1) : "0";
+  document.getElementById("stToplamSoru").textContent = toplamSoru;
+  document.getElementById("stAktifHata").textContent = state.hataDefteri.filter(h=>!h.cozuldu).length;
+
+  ciz_denemeChart();
+  ciz_soruChart();
+
+  const weakBox = document.getElementById("weakList");
+  let hepsi = [];
+  DERS_LISTESI.forEach(ders=>{
+    DERSLER_TAM[ders].forEach(konu=>{
+      const v = konuVeri(ders,konu);
+      const toplam = v.dogru+v.yanlis;
+      if(toplam >= 3){
+        hepsi.push({ders,konu,oran:v.dogru/toplam,toplam});
+      }
+    });
+  });
+  hepsi.sort((a,b)=>a.oran-b.oran);
+  const top5 = hepsi.slice(0,5);
+  if(!top5.length){
+    weakBox.innerHTML = '<div class="empty-note">Sorular sekmesinden ders/konu seçerek birkaç kayıt gir, en zayıf konuların burada listelensin.</div>';
+  } else {
+    weakBox.innerHTML = top5.map(x=>{
+      const pct = Math.round(x.oran*100);
+      const renk = pct<40?"var(--red)":pct<70?"var(--amber)":"var(--green)";
+      return `<div class="weak-row">
+        <div style="display:flex;align-items:center;"><span class="dot" style="background:${DERS_RENK[x.ders]};"></span><div><div class="wname">${x.konu}</div><div class="wsub">${x.ders}</div></div></div>
+        <div class="pct-pill" style="border-color:${renk};color:${renk};">%${pct}</div>
+      </div>`;
+    }).join("");
+  }
+
+  const planBox = document.getElementById("homePlanSummary");
+  const bugunPlan = state.planlar.filter(p=>p.tarih===bugun());
+  if(!bugunPlan.length){
+    planBox.innerHTML = '<div class="empty-note">Bugün için plan girilmemiş.</div>';
+  } else {
+    const tamam = bugunPlan.filter(p=>p.tamam).length;
+    planBox.innerHTML = `<div style="font-family:var(--mono);font-size:13px;">${tamam} / ${bugunPlan.length} görev tamamlandı</div>`;
+  }
+}
+
+/* reminder */
+let reminderInterval = null;
+document.getElementById("reminderTime").value = state.reminderTime;
+function reminderNoteRender(){
+  document.getElementById("btnReminder").textContent = state.reminderOn ? "Devre Dışı Bırak" : "Etkinleştir";
+}
+reminderNoteRender();
+document.getElementById("btnReminder").addEventListener("click", async ()=>{
+  if(state.reminderOn){
+    state.reminderOn = false;
+    if(reminderInterval) clearInterval(reminderInterval);
+    kaydet(); reminderNoteRender();
+    return;
+  }
+  if(!("Notification" in window)){
+    alert("Bu tarayıcı bildirimleri desteklemiyor.");
+    return;
+  }
+  const izin = await Notification.requestPermission();
+  if(izin !== "granted"){
+    alert("Bildirim izni verilmedi.");
+    return;
+  }
+  state.reminderTime = document.getElementById("reminderTime").value;
+  state.reminderOn = true;
+  kaydet(); reminderNoteRender();
+  baslatHatirlatici();
+});
+function baslatHatirlatici(){
+  if(reminderInterval) clearInterval(reminderInterval);
+  let sonBildirimGunu = null;
+  reminderInterval = setInterval(()=>{
+    if(!state.reminderOn) return;
+    const simdi = new Date();
+    const hh = String(simdi.getHours()).padStart(2,"0");
+    const mm = String(simdi.getMinutes()).padStart(2,"0");
+    const t = hh+":"+mm;
+    if(t === state.reminderTime && sonBildirimGunu !== bugun()){
+      sonBildirimGunu = bugun();
+      new Notification("Karne — Çalışma Vakti", {body:"Bugünkü planını ve konu tekrarını tamamlamayı unutma."});
+    }
+  }, 20000);
+}
+if(state.reminderOn) baslatHatirlatici();
+
+document.getElementById("btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "karne-yedek-"+bugun()+".json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById("btnYedekYukle").addEventListener("click", ()=>{
+  document.getElementById("yedekDosya").click();
+});
+document.getElementById("yedekDosya").addEventListener("change", (e)=>{
+  const dosya = e.target.files[0];
+  const msg = document.getElementById("yedekMsg");
+  if(!dosya) return;
+  const okuyucu = new FileReader();
+  okuyucu.onload = (ev)=>{
+    let yedek;
+    try{ yedek = JSON.parse(ev.target.result); }
+    catch(err){ msg.textContent = "Dosya okunamadı — geçerli bir yedek dosyası değil."; return; }
+    if(!yedek || typeof yedek !== "object" || !Array.isArray(yedek.denemeler)){
+      msg.textContent = "Bu dosya bir Karne yedeği gibi görünmüyor.";
+      return;
+    }
+    if(!confirm("Bu yedeği yüklemek, şu anki tüm verilerinin üzerine yazacak. Devam edilsin mi?")){
+      msg.textContent = ""; e.target.value = ""; return;
+    }
+    state = Object.assign(bosVeri(), yedek);
+    let maxId = 0;
+    ["denemeler","hataDefteri","planlar","notlar","soruGecmisi"].forEach(k=>{
+      (state[k]||[]).forEach(x=>{ if(x && typeof x.id === "number" && x.id > maxId) maxId = x.id; });
+    });
+    state.nextId = Math.max(state.nextId||1, maxId+1);
+    kaydet();
+    gitView("home");
+    msg.textContent = "Yedek başarıyla yüklendi.";
+    e.target.value = "";
+  };
+  okuyucu.readAsText(dosya);
+});
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(confirm("Tüm veriler silinecek. Emin misin?")){
+    state = bosVeri();
+    kaydet();
+    gitView("home");
+  }
+});
+
+/* ================= DENEME ================= */
+document.getElementById("denemeTarih").value = bugun();
+document.getElementById("planTarih").value = bugun();
+
+function renderDenemeForm(){
+  const box = document.getElementById("denemeDersler");
+  box.innerHTML = DERS_LISTESI.map(ders=>{
+    const max = LGS_SORU_SAYISI[ders];
+    return `<div class="ders-row" data-ders="${ders}" style="border-left:4px solid ${DERS_RENK[ders]};">
+      <div class="dname"><span><span class="dot" style="background:${DERS_RENK[ders]};"></span>${ders}</span> <span class="max">/ ${max} soru</span></div>
+      <div class="row3">
+        <div class="mini-field"><label>Doğru</label><input type="number" min="0" max="${max}" class="f-dogru" value="0"></div>
+        <div class="mini-field"><label>Yanlış</label><input type="number" min="0" max="${max}" class="f-yanlis" value="0"></div>
+        <div class="mini-field"><label>Boş</label><input type="number" min="0" max="${max}" class="f-bos" value="0"></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+renderDenemeForm();
+
+document.getElementById("btnDenemeKaydet").addEventListener("click", ()=>{
+  const tarih = document.getElementById("denemeTarih").value || bugun();
+  const ad = document.getElementById("denemeAd").value.trim();
+  const dersler = {};
+  let toplamNet = 0, herhangiVeri = false;
+  document.querySelectorAll("#denemeDersler .ders-row").forEach(row=>{
+    const ders = row.dataset.ders;
+    const dogru = parseInt(row.querySelector(".f-dogru").value)||0;
+    const yanlis = parseInt(row.querySelector(".f-yanlis").value)||0;
+    const bos = parseInt(row.querySelector(".f-bos").value)||0;
+    if(dogru||yanlis||bos) herhangiVeri = true;
+    const net = dogru - (yanlis/3);
+    toplamNet += net;
+    dersler[ders] = {dogru,yanlis,bos,net:Math.round(net*100)/100};
+  });
+  if(!herhangiVeri){ alert("En az bir derse veri gir."); return; }
+  state.denemeler.push({
+    id: yeniId(), tarih, ad, dersler,
+    toplamNet: Math.round(toplamNet*100)/100
+  });
+  dokunSeri();
+  kaydet();
+  document.getElementById("denemeAd").value = "";
+  renderDenemeForm();
+  renderDeneme();
+  alert("Deneme kaydedildi.");
+});
+
+function renderDeneme(){
+  const list = document.getElementById("denemeListe");
+  document.getElementById("denemeSayac").textContent = state.denemeler.length ? state.denemeler.length+" kayıt" : "";
+  const ters = [...state.denemeler].reverse();
+  if(!ters.length){ list.innerHTML = '<div class="empty-note">Henüz deneme kaydı yok.</div>'; return; }
+  list.innerHTML = ters.map(d=>{
+    const dersOzet = DERS_LISTESI.filter(ds=>d.dersler[ds]).map(ds=>{
+      const b = d.dersler[ds];
+      const r = DERS_RENK[ds];
+      return `<span class="tag" style="border-color:${r};color:${r};">${ds.slice(0,3)} ${b.dogru}D ${b.yanlis}Y</span>`;
+    }).join("");
+    return `<div class="list-item li-deneme">
+      <div class="lh">
+        <div><b style="font-family:var(--serif);font-size:14px;">${d.ad || "Deneme"}</b></div>
+        <div class="pct-pill" style="border-color:var(--ink);color:var(--ink);font-family:var(--mono);">${d.toplamNet} net</div>
+      </div>
+      <div class="meta">${d.tarih}</div>
+      <div class="tags" style="margin-top:8px;">${dersOzet}</div>
+      <div class="actions"><button class="icon-btn" onclick="karneSil('deneme',${d.id})">Sil</button></div>
+    </div>`;
+  }).join("");
+}
+
+/* ================= HATA DEFTERI ================= */
+const hataDersSel = document.getElementById("hataDers");
+hataDersSel.innerHTML = DERS_LISTESI.map(d=>`<option>${d}</option>`).join("");
+function hataKonuDoldur(){
+  const ders = hataDersSel.value;
+  document.getElementById("hataKonu").innerHTML = DERSLER_TAM[ders].map(k=>`<option>${k}</option>`).join("");
+}
+hataDersSel.addEventListener("change", hataKonuDoldur);
+hataKonuDoldur();
+
+/* görsel: dosyayı canvas'ta küçültüp sıkıştırıp base64 olarak tutuyoruz (localStorage taşmasın diye) */
+let hataGorselBase64 = null;
+function gorseliSikistir(file, cb){
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxW = 900;
+      const olcek = Math.min(1, maxW/img.width);
+      const c = document.createElement("canvas");
+      c.width = img.width*olcek;
+      c.height = img.height*olcek;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img,0,0,c.width,c.height);
+      cb(c.toDataURL("image/jpeg", 0.72));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+document.getElementById("hataGorsel").addEventListener("change",(e)=>{
+  const file = e.target.files[0];
+  const onizleme = document.getElementById("hataGorselOnizleme");
+  if(!file){ hataGorselBase64=null; onizleme.innerHTML=""; return; }
+  onizleme.innerHTML = '<div class="note-line">Görsel işleniyor...</div>';
+  gorseliSikistir(file, (dataUrl)=>{
+    hataGorselBase64 = dataUrl;
+    onizleme.innerHTML = `<img src="${dataUrl}" style="width:100%;max-width:220px;border-radius:4px;border:1px solid var(--line);display:block;">`;
+  });
+});
+
+document.getElementById("btnHataKaydet").addEventListener("click", ()=>{
+  const soru = document.getElementById("hataSoru").value.trim();
+  if(!soru){ alert("Soru özeti gir."); return; }
+  state.hataDefteri.push({
+    id: yeniId(),
+    tarih: bugun(),
+    ders: hataDersSel.value,
+    konu: document.getElementById("hataKonu").value,
+    kaynak: document.getElementById("hataKaynak").value,
+    soruNo: document.getElementById("hataSoruNo").value.trim(),
+    soru: soru,
+    dogruCevap: document.getElementById("hataDogruCevap").value.trim(),
+    neden: document.getElementById("hataNeden").value,
+    gorsel: hataGorselBase64,
+    cozuldu: false
+  });
+  dokunSeri();
+  kaydet();
+  document.getElementById("hataSoru").value="";
+  document.getElementById("hataDogruCevap").value="";
+  document.getElementById("hataSoruNo").value="";
+  document.getElementById("hataGorsel").value="";
+  document.getElementById("hataGorselOnizleme").innerHTML="";
+  hataGorselBase64 = null;
+  renderHata();
+  gitView("hata");
+});
+
+document.getElementById("imgOverlayClose").addEventListener("click", ()=>{
+  document.getElementById("imgOverlay").classList.remove("open");
+});
+document.getElementById("imgOverlay").addEventListener("click",(e)=>{
+  if(e.target.id==="imgOverlay") document.getElementById("imgOverlay").classList.remove("open");
+});
+window.gorselGoster = function(src){
+  document.getElementById("imgOverlayImg").src = src;
+  document.getElementById("imgOverlay").classList.add("open");
+};
+
+let hataFiltreDers = "Tümü";
+function renderHata(){
+  const tabs = document.getElementById("hataFiltre");
+  const listeDers = ["Tümü", ...DERS_LISTESI];
+  tabs.innerHTML = listeDers.map(d=>`<button class="tab-chip ${d===hataFiltreDers?'active':''}" data-d="${d}">${d}</button>`).join("");
+  tabs.querySelectorAll(".tab-chip").forEach(b=>b.addEventListener("click", ()=>{hataFiltreDers=b.dataset.d; renderHata();}));
+
+  let kayitlar = [...state.hataDefteri].reverse();
+  if(hataFiltreDers!=="Tümü") kayitlar = kayitlar.filter(h=>h.ders===hataFiltreDers);
+  document.getElementById("hataSayac").textContent = kayitlar.length+" kayıt";
+
+  const list = document.getElementById("hataListe");
+  if(!kayitlar.length){ list.innerHTML = '<div class="empty-note">Kayıt yok.</div>'; return; }
+  list.innerHTML = kayitlar.map(h=>{
+    const r = DERS_RENK[h.ders]||"var(--red)";
+    return `
+    <div class="list-item li-hata" style="opacity:${h.cozuldu?0.55:1};border-left-color:${r};">
+      <div class="tags">
+        <span class="tag" style="border-color:${r};color:${r};">${h.ders}</span>
+        <span class="tag">${h.konu}</span>
+        ${h.soruNo ? `<span class="tag">${h.soruNo}</span>` : ""}
+        ${h.kaynak ? `<span class="tag">${h.kaynak}</span>` : ""}
+        <span class="tag">${h.neden}</span>
+      </div>
+      <div class="body-txt">${h.soru}</div>
+      ${h.dogruCevap ? `<div class="meta">Doğru cevap: ${h.dogruCevap}</div>` : ""}
+      ${h.gorsel ? `<img src="${h.gorsel}" onclick="gorselGoster('${h.gorsel}')" style="width:100%;max-width:200px;border-radius:4px;border:1px solid var(--line);margin-top:8px;cursor:pointer;display:block;">` : ""}
+      <div class="meta" style="margin-top:6px;">${h.tarih}</div>
+      <div class="actions">
+        <button class="icon-btn" onclick="hataToggle(${h.id})">${h.cozuldu?"Tekrar Aç":"Tekrar Ettim — Kapat"}</button>
+        <button class="icon-btn" onclick="karneSil('hata',${h.id})">Sil</button>
+      </div>
+    </div>
+  `;
+  }).join("");
+}
+window.hataToggle = function(id){
+  const h = state.hataDefteri.find(x=>x.id===id);
+  if(h){ h.cozuldu = !h.cozuldu; kaydet(); renderHata(); }
+};
+
+/* ================= PLAN ================= */
+document.getElementById("btnPlanEkle").addEventListener("click", ()=>{
+  const tarih = document.getElementById("planTarih").value || bugun();
+  const txt = document.getElementById("planGorevInput").value.trim();
+  if(!txt) return;
+  state.planlar.push({id:yeniId(), tarih, gorev:txt, tamam:false});
+  kaydet();
+  document.getElementById("planGorevInput").value="";
+  renderPlan();
+});
+function renderPlan(){
+  const tarih = document.getElementById("planTarih").value || bugun();
+  const list = document.getElementById("planListe");
+  const gorevler = state.planlar.filter(p=>p.tarih===tarih).reverse();
+  if(!gorevler.length){ list.innerHTML = '<div class="empty-note">Bu tarih için görev yok.</div>'; }
+  else {
+    list.innerHTML = gorevler.map(p=>`
+      <div class="list-item li-plan">
+        <div class="plan-check">
+          <input type="checkbox" ${p.tamam?"checked":""} onchange="planToggle(${p.id})">
+          <div class="ptxt ${p.tamam?"done":""}">${p.gorev}</div>
+          <button class="icon-btn" onclick="karneSil('plan',${p.id})">Sil</button>
+        </div>
+      </div>
+    `).join("");
+  }
+  renderHaftaTablo();
+}
+document.getElementById("planTarih").addEventListener("change", renderPlan);
+window.planToggle = function(id){
+  const p = state.planlar.find(x=>x.id===id);
+  if(p){ p.tamam = !p.tamam; if(p.tamam) dokunSeri(); kaydet(); renderPlan(); renderHaftaTablo(); }
+};
+
+/* ---- haftalik gorev tablosu ---- */
+function pazartesiBul(dStr){
+  const d = new Date(dStr+"T00:00:00");
+  const gun = d.getDay();
+  const fark = (gun===0? -6 : 1-gun);
+  d.setDate(d.getDate()+fark);
+  return d;
+}
+function haftaGunleri(baseDateStr){
+  const pzt = pazartesiBul(baseDateStr);
+  const arr=[];
+  for(let i=0;i<7;i++){
+    const d = new Date(pzt); d.setDate(pzt.getDate()+i);
+    arr.push(d.toISOString().slice(0,10));
+  }
+  return arr;
+}
+const GUN_KISA = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+function renderHaftaTablo(){
+  const baz = document.getElementById("planTarih").value || bugun();
+  const gunler = haftaGunleri(baz);
+  const t = bugun();
+  const tablo = document.getElementById("haftaTablo");
+
+  const thead = "<thead><tr>" + gunler.map((g,i)=>
+    `<th>${GUN_KISA[i]}<span class="wdate">${g.slice(5).replace("-",".")}</span></th>`
+  ).join("") + "</tr></thead>";
+
+  const tbody = "<tbody><tr>" + gunler.map((g,i)=>{
+    const gorevler = state.planlar.filter(p=>p.tarih===g);
+    const gorevHtml = gorevler.map(p=>`
+      <div class="wk-task">
+        <input type="checkbox" ${p.tamam?"checked":""} onchange="planToggle(${p.id})">
+        <span class="${p.tamam?'done':''}">${p.gorev}</span>
+        <button class="wk-x" onclick="karneSil('plan',${p.id})">×</button>
+      </div>`).join("");
+    return `<td class="${g===t?'today':''}">
+      ${gorevHtml}
+      <div class="wk-add">
+        <input type="text" id="wk-in-${i}" placeholder="+ görev">
+        <button onclick="haftaEkle('${g}',${i})">+</button>
+      </div>
+    </td>`;
+  }).join("") + "</tr></tbody>";
+
+  tablo.innerHTML = thead + tbody;
+  tablo.querySelectorAll(".wk-add input").forEach((inp,i)=>{
+    inp.addEventListener("keydown",(e)=>{ if(e.key==="Enter") haftaEkle(gunler[i], i); });
+  });
+}
+window.haftaEkle = function(tarih, idx){
+  const inp = document.getElementById("wk-in-"+idx);
+  const txt = inp.value.trim();
+  if(!txt) return;
+  state.planlar.push({id:yeniId(), tarih, gorev:txt, tamam:false});
+  dokunSeri();
+  kaydet();
+  renderPlan();
+  renderHaftaTablo();
+};
+
+/* ================= NOTLAR ================= */
+document.getElementById("btnNotKaydet").addEventListener("click", ()=>{
+  const baslik = document.getElementById("notBaslik").value.trim();
+  const icerik = document.getElementById("notIcerik").value.trim();
+  if(!baslik && !icerik) return;
+  state.notlar.push({id:yeniId(), baslik: baslik||"Başlıksız Not", icerik, tarih:bugun()});
+  dokunSeri();
+  kaydet();
+  document.getElementById("notBaslik").value="";
+  document.getElementById("notIcerik").value="";
+  renderNot();
+});
+/* ================= SORULAR (günlük soru takibi) ================= */
+document.getElementById("soruTarih").value = bugun();
+document.getElementById("soruDers").innerHTML = '<option>Genel</option>' + DERS_LISTESI.map(d=>`<option>${d}</option>`).join("");
+const DERS_RENK_GENEL = "#1F2A44";
+function renkAl(ders){ return ders==="Genel" ? DERS_RENK_GENEL : (DERS_RENK[ders] || "var(--ink-faint)"); }
+
+let sorularAralik = 7;
+let sorularChartType = "bar";
+
+function soruKonuDoldur(){
+  const ders = document.getElementById("soruDers").value;
+  const sel = document.getElementById("soruKonu");
+  if(ders==="Genel"){
+    sel.innerHTML = '<option value="">— Konu yok (genel kayıt) —</option>';
+    sel.disabled = true;
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— Konu seçme —</option>' + DERSLER_TAM[ders].map(k=>`<option>${k}</option>`).join("");
+  }
+}
+document.getElementById("soruDers").addEventListener("change", soruKonuDoldur);
+soruKonuDoldur();
+
+document.getElementById("btnSoruKaydet").addEventListener("click", ()=>{
+  const tarih = document.getElementById("soruTarih").value || bugun();
+  const ders = document.getElementById("soruDers").value;
+  const konu = document.getElementById("soruKonu").value || null;
+  const dogru = parseInt(document.getElementById("soruDogru").value)||0;
+  const yanlis = parseInt(document.getElementById("soruYanlis").value)||0;
+  if(!dogru && !yanlis){ alert("En az doğru ya da yanlış sayısı gir."); return; }
+  state.soruGecmisi.push({id:yeniId(), tarih, ders, konu, dogru, yanlis, adet: dogru+yanlis});
+  if(ders!=="Genel" && konu){
+    const v = konuVeri(ders,konu);
+    v.dogru += dogru; v.yanlis += yanlis;
+  }
+  dokunSeri();
+  kaydet();
+  document.getElementById("soruDogru").value = 0;
+  document.getElementById("soruYanlis").value = 0;
+  renderSorular();
+  ciz_soruChart(); // ana sayfa grafiği de güncel kalsın
+});
+
+document.querySelectorAll("#soruAralikTabs .tab-chip").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    sorularAralik = parseInt(b.dataset.r);
+    document.querySelectorAll("#soruAralikTabs .tab-chip").forEach(x=>x.classList.toggle("active", x===b));
+    renderSorular();
+  });
+});
+document.querySelectorAll("#sorularChartToggle button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    sorularChartType = b.dataset.t;
+    document.querySelectorAll("#sorularChartToggle button").forEach(x=>x.classList.toggle("active", x===b));
+    renderSorular();
+  });
+});
+
+/* pazartesi başlangıçlı bu haftanın tarih aralığı */
+function buHaftaAralik(){
+  const d = new Date(bugun()+"T00:00:00");
+  const gun = d.getDay();
+  const fark = (gun===0? -6 : 1-gun);
+  const pzt = new Date(d); pzt.setDate(pzt.getDate()+fark);
+  return { basStr: pzt.toISOString().slice(0,10), bitStr: bugun() };
+}
+
+function renderHaftaOzet(){
+  const {basStr} = buHaftaAralik();
+  const kayitlar = state.soruGecmisi.filter(k=>k.tarih>=basStr && k.tarih<=bugun());
+  let dogru=0, yanlis=0;
+  kayitlar.forEach(k=>{ dogru+=k.dogru||0; yanlis+=k.yanlis||0; });
+  const toplam = dogru+yanlis;
+  const pct = toplam ? Math.round((dogru/toplam)*100) : 0;
+  document.getElementById("haftaOzet").innerHTML = `
+    <div class="stat-box c1"><b>${toplam}</b><span>Toplam Soru</span></div>
+    <div class="stat-box c3"><b>${dogru}</b><span>Doğru</span></div>
+    <div class="stat-box c4"><b>${yanlis}</b><span>Yanlış</span></div>
+    <div class="stat-box c2"><b>%${pct}</b><span>Başarı</span></div>
+  `;
+}
+
+function renderSorular(){
+  // grafik: seçili aralık, toplam soru/gün
+  drawChart("sorularChart", soruGunlukSeri(sorularAralik), {
+    type: sorularChartType, emptyMsg:"Henüz soru kaydı yok.", color:"#3F7D4F", pointColor:"#2A5C99"
+  });
+
+  renderHaftaOzet();
+
+  // aralık içindeki kayıtları filtrele
+  const bugunTarih = new Date(bugun()+"T00:00:00");
+  const baslangic = new Date(bugunTarih); baslangic.setDate(baslangic.getDate()-(sorularAralik-1));
+  const baslangicStr = baslangic.toISOString().slice(0,10);
+  const aralikKayitlar = state.soruGecmisi.filter(k=>k.tarih>=baslangicStr && k.tarih<=bugun());
+
+  // başarı oranı (seçili aralık)
+  let arDogru=0, arYanlis=0;
+  aralikKayitlar.forEach(k=>{ arDogru+=k.dogru||0; arYanlis+=k.yanlis||0; });
+  const arToplam = arDogru+arYanlis;
+  const arPct = arToplam ? Math.round((arDogru/arToplam)*100) : 0;
+  const basariBox = document.getElementById("sorularBasariOrani");
+  if(!arToplam){
+    basariBox.innerHTML = '<div class="empty-note">Bu aralıkta kayıt yok.</div>';
+  } else {
+    const renk = arPct<40?"var(--red)":arPct<70?"var(--amber)":"var(--green)";
+    basariBox.innerHTML = `
+      <div class="weak-row">
+        <div class="wname">${arDogru} doğru / ${arYanlis} yanlış — ${arToplam} soru</div>
+        <div class="pct-pill" style="border-color:${renk};color:${renk};">%${arPct}</div>
+      </div>
+      <div class="bar-track" style="margin-top:8px;">
+        <div class="bar-fill-g" style="width:${arPct}%;"></div><div class="bar-fill-r" style="width:${100-arPct}%"></div>
+      </div>`;
+  }
+
+  // ders dağılımı
+  const dagilim = {};
+  let toplamSoru = 0;
+  aralikKayitlar.forEach(k=>{
+    const ders = k.ders || "Genel";
+    dagilim[ders] = (dagilim[ders]||0) + k.adet;
+    toplamSoru += k.adet;
+  });
+  const dagilimBox = document.getElementById("sorularDersDagilim");
+  const dersler = Object.keys(dagilim).sort((a,b)=>dagilim[b]-dagilim[a]);
+  if(!dersler.length){
+    dagilimBox.innerHTML = '<div class="empty-note">Bu aralıkta kayıt yok.</div>';
+  } else {
+    dagilimBox.innerHTML = dersler.map(ders=>{
+      const adet = dagilim[ders];
+      const pct = toplamSoru ? Math.round((adet/toplamSoru)*100) : 0;
+      const renk = renkAl(ders);
+      return `<div class="weak-row">
+        <div style="display:flex;align-items:center;"><span class="dot" style="background:${renk};"></span><div class="wname">${ders}</div></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="meta" style="font-family:var(--mono);">${adet} soru</span>
+          <div class="pct-pill" style="border-color:${renk};color:${renk};">%${pct}</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // gün gün kayıt listesi (aralık içinde, tarihe göre grupla, azalan sırada)
+  const gunlere = {};
+  aralikKayitlar.forEach(k=>{
+    if(!gunlere[k.tarih]) gunlere[k.tarih] = [];
+    gunlere[k.tarih].push(k);
+  });
+  const tarihler = Object.keys(gunlere).sort().reverse();
+  document.getElementById("sorularKayitSayac").textContent = aralikKayitlar.length + " kayıt";
+  const gunListe = document.getElementById("sorularGunListe");
+  if(!tarihler.length){
+    gunListe.innerHTML = '<div class="empty-note">Bu aralıkta henüz kayıt yok. Yukarıdan tarih seçip ekleyebilirsin.</div>';
+  } else {
+    gunListe.innerHTML = tarihler.map(t=>{
+      const kayitlar = gunlere[t];
+      const gunToplam = kayitlar.reduce((s,k)=>s+k.adet,0);
+      const satirlar = kayitlar.map(k=>{
+        const renk = renkAl(k.ders||"Genel");
+        return `<div class="weak-row" style="padding:6px 0;">
+          <div style="display:flex;align-items:center;"><span class="dot" style="background:${renk};"></span>
+            <span class="wname">${k.ders||"Genel"}${k.konu?" — "+k.konu:""}</span></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="meta" style="font-family:var(--mono);">${k.dogru!=null?k.dogru+"D "+k.yanlis+"Y":k.adet+" soru"}</span>
+            <button class="icon-btn" onclick="karneSil('soru',${k.id})">Sil</button>
+          </div>
+        </div>`;
+      }).join("");
+      return `<div class="list-item li-plan" style="border-left-color:var(--c-fen);">
+        <div class="lh"><b style="font-family:var(--serif);font-size:14px;">${t}</b>
+          <span class="pct-pill" style="border-color:var(--ink);color:var(--ink);">${gunToplam} soru</span></div>
+        <hr class="rule" style="margin:8px 0;">        ${satirlar}
+      </div>`;
+    }).join("");
+  }
+}
+
+function renderNot(){
+  document.getElementById("notSayac").textContent = state.notlar.length+" not";
+  const list = document.getElementById("notListe");
+  const ters = [...state.notlar].reverse();
+  if(!ters.length){ list.innerHTML = '<div class="empty-note">Henüz not yok.</div>'; return; }
+  list.innerHTML = ters.map(n=>`
+    <div class="list-item li-not">
+      <div class="lh"><b style="font-family:var(--serif);font-size:14px;">${n.baslik}</b></div>
+      <div class="meta">${n.tarih}</div>
+      <div class="body-txt">${(n.icerik||"").replace(/</g,"&lt;")}</div>
+      <div class="actions"><button class="icon-btn" onclick="karneSil('not',${n.id})">Sil</button></div>
+    </div>
+  `).join("");
+}
+
+/* ================= ORTAK SİL ================= */
+window.karneSil = function(tur,id){
+  if(!confirm("Silinsin mi?")) return;
+  if(tur==="deneme"){ state.denemeler = state.denemeler.filter(x=>x.id!==id); renderDeneme(); }
+  if(tur==="hata"){ state.hataDefteri = state.hataDefteri.filter(x=>x.id!==id); renderHata(); }
+  if(tur==="plan"){ state.planlar = state.planlar.filter(x=>x.id!==id); renderPlan(); renderHaftaTablo(); }
+  if(tur==="not"){ state.notlar = state.notlar.filter(x=>x.id!==id); renderNot(); }
+  if(tur==="soru"){ state.soruGecmisi = state.soruGecmisi.filter(x=>x.id!==id); renderSorular(); ciz_soruChart(); }
+  kaydet();
+};
+
+/* ================= BAŞLAT ================= */
+renderHome();
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-const CACHE_ADI = "karne-cache-v1";
+const CACHE_ADI = "karne-cache-v2";
 const DOSYALAR = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
